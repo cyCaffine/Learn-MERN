@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
 
   // This handleChange function is used to update the email state in
@@ -18,6 +19,7 @@ const ForgotPassword = () => {
   };
 
   // This handleSubmit function is called when the form is submitted. It prevents the default form submission behavior (e.preventDefault()) and then sends a POST request to the server to initiate the password reset process.
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -40,6 +42,9 @@ const ForgotPassword = () => {
       }
     }
   };
+
+
+  
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">

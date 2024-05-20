@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -6,7 +6,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -18,15 +17,19 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import AddIcon from "@mui/icons-material/Add";
+import InputAdornment from "@mui/material/InputAdornment";
 import RemoveIcon from "@mui/icons-material/Remove";
+// import  AppBar from "../components/AppBar";
 
 const drawerWidth = 240;
 
 function ResponsiveDrawer(props) {
   const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
-  const [showInputFields, setShowInputFields] = React.useState([true]);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+  const [sourceNames, setSourceNames] = useState([""]);
+  const [addedSources, setAddedSources] = useState([]);
 
   const handleDrawerClose = () => {
     setIsClosing(true);
@@ -44,16 +47,92 @@ function ResponsiveDrawer(props) {
   };
 
   const handleAddSource = () => {
-    setShowInputFields([...showInputFields, true]);
+    setShowInput(true);
+  };
+
+  const handleSourceNameChange = (index, value) => {
+    const newSourceNames = [...sourceNames];
+    newSourceNames[index] = value;
+    setSourceNames(newSourceNames);
+  };
+
+  const handleAddMoreSources = () => {
+    setSourceNames([...sourceNames, ""]);
   };
 
   const handleRemoveSource = (index) => {
-    setShowInputFields(showInputFields.filter((_, i) => i !== index));
+    const newSourceNames = [...sourceNames];
+    newSourceNames.splice(index, 1);
+    setSourceNames(newSourceNames);
   };
 
-  const handleInputChange = (index, event) => {
-    // Handle input field changes here
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:8000/add/addSources", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save sources");
+      }
+
+      const newSources = sourceNames.filter((name) => name.trim() !== "");
+      setAddedSources([...addedSources, ...newSources]);
+
+      console.log("Sources saved successfully");
+    } catch (error) {
+      console.error("Error saving sources:", error.message);
+    }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch("http://localhost:8000/add/addSources", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error("Failed to save sources");
+  //     }
+
+  //     console.log("Sources saved successfully");
+  //   } catch (error) {
+  //     console.error("Error saving sources:", error.message);
+  //   }
+  // };
+
+  // const drawer = (
+  //   <div>
+  //     <Toolbar />
+  //     <Divider />
+  //     <List>
+  //       <ListItem key="Add Sources" disablePadding>
+  //         <ListItemButton onClick={handleAddSource}>
+  //           <ListItemIcon>
+  //             <AddIcon />
+  //           </ListItemIcon>
+  //           <ListItemText primary="Add Sources" />
+  //         </ListItemButton>
+  //       </ListItem>
+  //       <ListItem key="View Sources" disablePadding>
+  //         <ListItemButton>
+  //           <ListItemIcon>
+  //             <MailIcon />
+  //           </ListItemIcon>
+  //           <ListItemText primary="View Sources" />
+  //         </ListItemButton>
+  //       </ListItem>
+  //     </List>
+  //     <Divider />
+  //   </div>
+  // );
 
   const drawer = (
     <div>
@@ -63,7 +142,7 @@ function ResponsiveDrawer(props) {
         <ListItem key="Add Sources" disablePadding>
           <ListItemButton onClick={handleAddSource}>
             <ListItemIcon>
-              <InboxIcon />
+              <AddIcon />
             </ListItemIcon>
             <ListItemText primary="Add Sources" />
           </ListItemButton>
@@ -76,6 +155,14 @@ function ResponsiveDrawer(props) {
             <ListItemText primary="View Sources" />
           </ListItemButton>
         </ListItem>
+        {addedSources.map((source, index) => (
+          <ListItem key={index} disablePadding>
+            <ListItemButton>
+              <ListItemIcon>{/* <MailIcon /> */}</ListItemIcon>
+              <ListItemText primary={source} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
       <Divider />
     </div>
@@ -86,6 +173,7 @@ function ResponsiveDrawer(props) {
 
   return (
     <>
+      {/* <AppBar /> */}
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <AppBar
@@ -148,7 +236,6 @@ function ResponsiveDrawer(props) {
             {drawer}
           </Drawer>
         </Box>
-
         <Box
           component="main"
           sx={{
@@ -158,58 +245,51 @@ function ResponsiveDrawer(props) {
           }}
         >
           <Toolbar />
-          {showInputFields.map((_, index) => (
-            <Box
-              key={index}
-              sx={{ display: "flex", justifyContent: "center", mt: 1 }}
-            >
-              <IconButton onClick={() => handleRemoveSource(index)}>
-                {/* <RemoveIcon /> */}
-                <IconButton onClick={() => handleRemoveSource(index)}>
+          <form onSubmit={handleSubmit}>
+            {showInput && (
+              <>
+                {sourceNames.map((name, index) => (
                   <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 20,
-                      height: 20,
-                      backgroundColor: "red",
-                      borderRadius: 2,
-                    }}
+                    key={index}
+                    sx={{ display: "flex", justifyContent: "center", mt: 1 }}
                   >
-                    <RemoveIcon sx={{ color: "white" }} />
+                    <TextField
+                      label={`Source Name ${index + 1}`}
+                      value={name}
+                      onChange={(e) =>
+                        handleSourceNameChange(index, e.target.value)
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <IconButton
+                              color="secondary"
+                              onClick={() => handleRemoveSource(index)}
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              color="primary"
+                              onClick={handleAddMoreSources}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
-                </IconButton>
-              </IconButton>
-              <TextField
-                label="Enter source"
-                variant="outlined"
-                onChange={(event) => handleInputChange(index, event)}
-              />
-              {index === showInputFields.length - 1 && (
-                <IconButton onClick={handleAddSource}>
-                  <Box
-                    component="div"
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 20,
-                      height: 20,
-                      backgroundColor: "green",
-                      borderRadius: 2,
-                      cursor: "pointer",
-                    }}
-                    onClick={handleAddSource}
-                  >
-                    <Typography variant="body1" sx={{ color: "white" }}>
-                      +
-                    </Typography>
-                  </Box>
-                </IconButton>
-              )}
-            </Box>
-          ))}
+                ))}
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <button type="submit">Submit</button>
+                </Box>
+              </>
+            )}
+          </form>
         </Box>
       </Box>
     </>

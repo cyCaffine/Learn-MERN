@@ -12,9 +12,13 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData(
+      { ...formData, [e.target.name]: e.target.value }
+      );
   };
+  
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -22,10 +26,11 @@ const Login = () => {
         "http://localhost:8000/auth/login",
         formData
       );
+      
       console.log(response.data);
       localStorage.setItem("token", response.data);
       console.log(response.data.token);
-      navigate("/");
+      navigate("/home");
       // Optionally, you can redirect the user to another page upon successful login
     } catch (error) {
       console.error("Error logging in:", error);

@@ -3,6 +3,7 @@ const connectDB = require("./db");
 
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
+const addSourcesRouterRoutes = require("./routes/addSourcesRouter");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -10,6 +11,7 @@ const PORT = process.env.PORT || 8000;
 // Allow requests from localhost:3000
 // This code is used to allow communication between a client-side application and a server-side application by enabling CORS
 const cors = require("cors");
+
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 // Connect to MongoDB
@@ -23,8 +25,9 @@ app.use("/auth", authRoutes);
 
 // Define user routes
 app.use("/user", userRoutes);
+app.use("/add", addSourcesRouterRoutes);
 
-// app.use("/forgotpassword", forgotPasswordRouter);
+
 
 // Start the server
 app.listen(PORT, () => {

@@ -6,6 +6,3 @@ const instance = axios.create({
 
 export default instance;
 
-// http://localhost:8000
-
-// example "http://localhost:3000"
